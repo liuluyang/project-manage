@@ -1,0 +1,297 @@
+{% extends 'padlist_base.html' %}
+
+{% load staticfiles %}
+
+
+
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css"/>
+
+{% block content %}
+    <style type="text/css">
+    .card-box {border-top-style: solid;
+        border-top-width: 3px;
+        width: 300px;}
+    .col-lg-4{width: 400px;}
+    </style>
+        {% comment %}<a style="float: right;margin-top: -5%" href="/logout/"><i class="ti-power-off m-r-5"></i> 注销</a>{% endcomment %}
+        <div class="row" id="foo">
+        <!--笔记卡片-->
+        {% for pad_card in pad_cards %}
+            <div class="col-lg-4">
+                <div class="card-box project-box">
+                    <div class="notification-box" style="position: absolute;right: 0px;top: 0px; border: 10px;">
+                        <ul class="list-inline m-b-0">   <!--***********************-->
+                            <li>
+{#                                <a href="#" class="right-bar-toggle"  style="color: #1e266a;"  project_id="{{ pad_card.padID }}">#}
+{#                                    <i class="zmdi zmdi-more-vert"></i>#}
+{##}
+{#                                    <div class="noti-dot"  notice="notice_{{ pad_card.padID }}" hidden="hidden">#}
+{#                                        <span class="dot"></span>#}
+{#                                        <span class="pulse"></span>#}
+{#                                    </div>#}
+{#                                </a>#}
+
+{#                                <div class="dropdown pull-right">#}
+                                <div class="dropdown pull-right" style="position: absolute;top: 20px;">
+                                    <a href="#" class="dropdown-toggle card-drop" data-toggle="dropdown" aria-expanded="false">
+                                        <i class="zmdi zmdi-more-vert"></i>
+                                    </a>
+                                    <ul class="dropdown-menu" role="menu">
+                                        <li>
+                                            <button class="btn btn-default" onclick="$('#pad_del').show()" style="
+                                            font-size: 14px;padding: 5px 20px;line-height: 1.42857143;color: #333;
+                                            cursor: pointer;border: solid 0px black;width: 125%;margin: -5px 0px 0px;">
+                                                删除</button>
+{#                                            <form method="post">#}
+{#                                                <input name="padID" value="{{ pad_card.padID }}" hidden="hidden">#}
+{#                                                <button class="btn btn-default" type="submit" id="pad_del" style="#}
+{#                                                font-size: 14px;padding: 5px 20px;line-height: 1.42857143;color: #333;#}
+{#                                                cursor: pointer;border: solid 0px black;width: 125%;margin: -5px 0px 0px;">#}
+{#                                                    删除</button>#}
+{#                                            </form>#}
+                                        </li>
+{#                                        <li>#}
+{#                                            <form method="post">#}
+{#                                                <input name="padID" value="{{ pad_card.padID }}" hidden="hidden">#}
+{#                                                <button class="btn btn-default" type="submit" style="#}
+{#                                                font-size: 14px;padding: 5px 20px;line-height: 1.42857143;color: #333;#}
+{#                                                cursor: pointer;border: solid 0px black;width: 125%;margin: 0px;">#}
+{#                                                    删除</button>#}
+{#                                            </form>#}
+{#                                        </li>#}
+                                    </ul>
+                                </div>
+
+                            </li>
+
+                        </ul>
+                    </div>
+                    <div id="pad_del" style="background-color: rgba(0,0,0,0.3);z-index:9999;position: fixed;top:0;left:0;width: 100%;height: 100%;" hidden="hidden">
+                        <div style="width: 500px;height: 320px;background-color:white;border-radius: 4px;position: fixed;left:35%;top:27%;">
+                            <form method="post" action="">
+                                <div style="width: 70%;border:0px solid #d1d1d1;margin: auto ;padding-top: 50px;" align="center">
+                                    <h3>确定要删除笔记《{{ pad_card.pad_name }}》吗?</h3>
+{#                                    <p style="color:red;">{{ error_change_parent }}</p>#}
+                                    <input type="number" value="{{ url }}" id="project_id_input" hidden="hidden">
+                                    <input type="text" name="judge" value="pad_delete" hidden="hidden">
+                                    <input name="padID" value="{{ pad_card.padID }}" hidden="hidden">
+                                </div>
+
+                                <div style="margin-top: 10px;" align="center">
+                                    <input type="submit" value="确定！" style="background-color: #249cdb;color: white;border:none;height: 40px;width: 100px;font-size: 15px;margin-left:5px;" name="change">
+                                    <input type="button" value="取消" style="background-color: #00b900;color: white;border:none;height: 40px;width: 60px;font-size: 15px;" onclick="$('#pad_del').hide();">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div id="error_message" style="background-color: rgba(0,0,0,0.3);z-index:9999;position: fixed;top:0;left:0;width: 100%;height: 100%;" {% if error_message %}{% else %}hidden="hidden"{% endif %}>
+                        <div style="width: 500px;height: 320px;background-color:white;border-radius: 4px;position: fixed;left:35%;top:27%;">
+                            <div style="width: 70%;border:0px solid #d1d1d1;margin: auto ;padding-top: 50px;" align="center">
+                                <h3>{{ error_message }}</h3>
+                            </div>
+                            <div style="margin-top: 10px;" align="center">
+                                <button type="button" style="background-color: #249cdb;color: white;border:none;height: 40px;width: 100px;font-size: 15px;margin-left:5px;" onclick="$('#error_message').hide();">确定</button>
+                            </div>
+                        </div>
+                    </div>
+                    <h4 class="m-t-0 m-b-5" style="border:0px solid grey;">
+                        <a href="{{ pad_api.pad_url }}{{ pad_card.padID }}" style="font-family: SimSun;">{{ pad_card.pad_name }}</a>
+                        <div style="font-size: 10px;">记事本名称:{{ pad_card.pad_name }}</div>
+                        <div style="font-size: 10px;">创建者:{{ pad_card.pad_creator }}</div>
+                        <div style="font-size: 10px;">创建时间:{{ pad_card.pad_create_time }}</div>
+                        <div style="font-size: 10px;">修改时间:{{ pad_card.pad_change_time }}</div>
+                        <div style="font-size: 10px;">作者:{{ pad_card.pad_authors }}</div>
+                        <div style="font-size: 10px;">项目ID:{{ pad_card.pad_project }}</div>
+                        <div style="font-size: 10px;">类型:{{ pad_card.pad_type }}</div>
+                    </h4>
+
+                    <p class="text-success text-uppercase m-b-20 font-13">{{ project.project_summary }}</p>
+                    <p class="text-muted font-13" style="border:0px blue solid;height: 20px;max-width:92%;overflow: hidden;text-overflow:ellipsis;
+                                                         white-space:nowrap;">
+                    </p>
+
+                </div>
+            </div><!-- end col-->
+
+
+        {% endfor %}
+        </div>
+
+    {% block material %}
+            <link type="text/css" rel="stylesheet" href="{% static 'material/materialize.css' %}"  media="screen,projection"/>
+            <script type="text/javascript" src="{% static 'jquery-2.1.1.min.js' %}"></script>
+            <script type="text/javascript" src="{% static 'material/js/materialize.min.js' %}"></script>
+
+            <div class="mater fixed-action-btn" style="bottom: 20%; right:0.5%;" >
+                <a class="mater btn-floating btn-large red" style="display: none;">
+                    <!--<b class="large">添加</b>-->
+                    <i class="fa fa-plus" aria-hidden="true"></i>
+                </a>
+                <ul style="list-style: none;margin:0;padding:0;">
+
+
+                    {% if template.name == 'effects' %}
+                        <li>
+                            <a class="mater btn-floating green" data-container="body" data-toggle="popover" data-trigger="hover focus  manual click" data-animation="true" data-placement="left" data-content="镜头" class="material-icons" href="/{{ url }}/effects/newshot/">
+                                <!--<b>镜头</b>-->
+                                <i class="fa fa-video-camera" aria-hidden="true"></i>
+                            </a>
+                        </li>
+                        <li >
+                            <a class="mater btn-floating blue" data-container="body" data-toggle="popover" data-trigger="hover focus  manual click" data-animation="true" data-placement="left" data-content="资产" href="/{{ url }}/newassets/" class="material-icons" >
+                                <!--<b class="material-icons">资产</b>-->
+                                <i class="fa fa-archive" aria-hidden="true"></i>
+                            </a>
+                        </li>
+                    {% elif template.name == 'HR' %}
+                        <li>
+                            <a class="mater btn-floating red" data-container="body" data-toggle="popover" data-trigger="hover focus  manual click" data-animation="true" data-placement="left" data-content="请假单" class="material-icons" href="/{{ url }}/HR/create_leave/">
+                                <!--<b>请假单</b>-->
+                                <i class="fa fa-beer" aria-hidden="true"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="mater btn-floating green" data-container="body" data-toggle="popover" data-trigger="hover focus  manual click" data-animation="true" data-placement="left" data-content="申请单" class="material-icons" href="/{{ url }}/HR/create_Leave_application/">
+                                <!--<b>申请单</b>-->
+                                <i class="fa fa-tasks" aria-hidden="true"></i>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li>
+                            <a class="mater btn-floating red" data-container="body" data-toggle="popover" data-trigger="hover focus  manual click" data-animation="true" data-placement="left" data-content="任务" href="/{{ url }}/newtask/"class="material-icons" >
+                                <!--<b class="material-icons">任务</b>-->
+                                <i class="fa fa-tasks" aria-hidden="true"></i>
+                            </a>
+                        </li>
+                        <li >
+                            <a class="mater btn-floating blue" data-container="body" data-toggle="popover" data-trigger="hover focus  manual click" data-animation="true" data-placement="left" data-content="资产" href="/{{ url }}/newassets/" class="material-icons" >
+                                <!--<b class="material-icons">资产</b>-->
+                                <i class="fa fa-archive" aria-hidden="true"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    <li>
+                        <a class="mater btn-floating green" data-container="body" data-toggle="popover" data-trigger="hover focus  manual click" data-animation="true" data-placement="left" data-content="维基" class="material-icons" href="/{{ url }}/create_wiki/">
+                            <!--<b>维基</b>-->
+                            <i class="fa fa-wikipedia-w" aria-hidden="true"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        {% endblock %}
+                <!-- end row -->
+
+<!--添加笔记（新建任务笔记）-->
+<div class="mater fixed-action-btn" style="display:block;bottom: 20%; right: 0.5%;">
+<a data-container="body" data-toggle="popover" data-trigger="hover focus  manual click" data-animation="true" data-placement="left" data-content="新建笔记" href="/padlist/{{ url }}/create_pad/"class="material-icons" ><i class="fa fa-cubes" style="font-size:43px; margin-bottom:10px;"></i></a>
+</div>
+
+<div class="mater fixed-action-btn" id="backtop" style="display:block;bottom: 20%; right: 0.5%;">
+<a href="#back_top" target="_self" id="back_top_button"></a>
+</div>
+
+
+<script type="text/javascript" src="{% static 'jQuery.js' %}"></script>  <!--jq压缩文件-->
+<script type="text/javascript" src="{% static 'Sortable.js' %}"></script>
+<script type="text/javascript" src="{% static 'app.js' %}"></script>
+
+
+<script type="text/javascript">
+
+//返回顶部js
+$(document).ready(function(){
+ //首先将#backtop隐藏
+ $("#backtop").hide();
+ //当滚动条的位置处于距顶部600像素以下时，跳转链接出现，否则消失
+ $(function () {
+  $(window).scroll(function(){
+   if ($(window).scrollTop()>600){
+    $("#backtop").fadeIn(500);
+   }else{
+    $("#backtop").fadeOut(500);
+   }
+ });
+ //当点击跳转链接后，回到页面顶部位置
+ $("#backtop").click(function(){
+  $('body,html').animate({scrollTop:0},500);
+   return false;
+  });
+ });
+});
+
+//生成随机颜色js
+function getRandomColor()
+{
+var c = '#';
+
+var cArray = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'];
+for(var i = 0; i < 6;i++)
+{
+var cIndex = Math.round(Math.random()*15);
+c += cArray[cIndex];
+}
+return c;
+    //alert(c)
+}
+//getRandomColor()
+
+//}
+cards = $('.card-box')
+//alert(cards.length)
+//cards.css('border-top','red 1px solid')
+cards.each(function () {
+    var c = '#';
+
+var cArray = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'];
+for(var i = 0; i < 6;i++)
+{
+var cIndex = Math.round(Math.random()*15);
+c += cArray[cIndex];
+}
+    //alert(1)
+    $(this).css('border-top','3px solid '+c)
+})
+
+
+//拖拽js
+
+var el = document.getElementById('foo');
+new Sortable(el);
+new Sortable(el, {
+    group: "name",
+    store: null, // @see Store
+    handle: ".my-handle", // 点击目标元素约束开始
+    draggable: ".item",   // 指定那些选项需要排序
+    ghostClass: "sortable-ghost",
+
+    onStart: function (/**Event*/evt) { // 拖拽
+        var itemEl = evt.item;
+    },
+
+    onEnd: function (/**Event*/evt) { // 拖拽
+        var itemEl = evt.item;
+    },
+
+    onAdd: function (/**Event*/evt){
+        var itemEl = evt.item;
+    },
+
+    onUpdate: function (/**Event*/evt){
+        var itemEl = evt.item; // 当前拖拽的html元素
+    },
+
+    onRemove: function (/**Event*/evt){
+        var itemEl = evt.item;
+    }
+});
+
+
+
+</script>
+{% endblock %}
+
+<!-- -->
+
+

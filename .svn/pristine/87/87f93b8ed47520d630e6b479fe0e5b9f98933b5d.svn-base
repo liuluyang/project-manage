@@ -1,0 +1,23 @@
+#coding:utf-8
+from django.db import models
+from datetime import datetime
+from dw.models import Type
+
+
+#笔记
+class Pad_card(models.Model):
+    padID = models.CharField(max_length=200,verbose_name='笔记ID')
+    pad_name = models.CharField(max_length=200,verbose_name='笔记名称')
+    pad_authors = models.TextField(verbose_name='作者')
+    pad_creator = models.CharField(max_length=200,verbose_name='创建者')
+    pad_create_time = models.DateField(verbose_name='创建时间')
+    pad_change_time = models.DateField(verbose_name='修改时间')
+    pad_project = models.CharField(max_length=20, verbose_name='所属项目', blank=True, null=True, default=0)
+    pad_type = models.ForeignKey(to=Type,verbose_name='笔记类型')
+
+    def __unicode__(self):
+        return self.pad_name
+
+    class Meta:
+        verbose_name = '笔记卡片'
+        verbose_name_plural = '笔记卡片'

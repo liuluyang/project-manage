@@ -1,0 +1,4 @@
+host_config:
+    "localhost":
+        auth_method: external
+        extauth_program: "/var/www/cgworldline/ejabberd_auth.sh"

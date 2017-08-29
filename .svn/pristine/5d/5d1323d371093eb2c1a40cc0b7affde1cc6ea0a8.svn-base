@@ -1,0 +1,135 @@
+#coding:utf8
+# from django.shortcuts import render_to_response
+import urllib2
+import json
+from datetime import datetime
+from django.shortcuts import render,render_to_response,HttpResponseRedirect,HttpResponse
+from models import *
+import time
+import random
+from etherpad_lite import EtherpadLiteClient
+from dw.models import Project, User, Type
+from dw.decorator import login_required
+
+#笔记列表
+@login_required
+def show(request,*args,**kwargs):
+    if request.method == "POST":
+        padID = request.POST.get('padID')
+        delete_pad(padID)
+    url = kwargs['project_id']
+    user_now = request.session.get('USERNAME', False)
+    user_head_portrait = User.objects.get(username=user_now).head_portrait
+    with open('/var/www/etherpad-lite/APIKEY.txt','r') as file_temp:
+        apikey = file_temp.read()
+    page_padname = urllib2.urlopen('http://filmind.cn:9001/api/1.2.1/listAllPads?apikey='+apikey).read()
+    # page_padname = urllib2.urlopen('http://192.168.3.133:9001/api/1.2.1/listAllPads?apikey='+apikey).read()
+    padIDs = json.loads(page_padname)['data']['padIDs']
+    pad_cards = Pad_card.objects.all()
+    return render_to_response('show.html', locals())
+
+#删除笔记
+def delete_pad(padID):
+    with open('/var/www/etherpad-lite/APIKEY.txt','r') as file_temp:
+        apikey = file_temp.read()
+    padIDs = urllib2.urlopen('http://filmind.cn:9001/api/1.2.1/listAllPads?apikey='+apikey).read()
+    # padIDs = urllib2.urlopen('http://192.168.3.133:9001/api/1.2.1/listAllPads?apikey='+apikey).read()
+    pad_objects = Pad_card.objects.all()
+    padIDs_card = []
+    for pad_object in pad_objects:
+        padIDs_card.append(pad_object.padID)
+    if padID in padIDs:
+        url_pad = 'http://filmind.cn:9001/api/1.2.1/deletePad?apikey='+apikey+'&padID='+padID
+        # url_pad = 'http://192.168.3.133:9001/api/1.2.1/deletePad?apikey='+apikey+'&padID='+padID
+        page_pad = urllib2.urlopen(url_pad).read()
+    if padID in padIDs_card:
+        Pad_card.objects.get(padID=padID).delete()
+
+
+#创建随机padID
+def create_padID():
+    with open('/var/www/etherpad-lite/APIKEY.txt','r') as file_temp:
+        apikey = file_temp.read()
+    page_pad_name = urllib2.urlopen('http://filmind.cn:9001/api/1.2.1/listAllPads?apikey='+apikey).read()
+    # page_pad_name = urllib2.urlopen('http://192.168.3.133:9001/api/1.2.1/listAllPads?apikey='+apikey).read()
+    padIDs = json.loads(page_pad_name)['data']['padIDs']
+    chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_"
+    string_length = 20
+    random_string = ''
+    for i in range(string_length):
+        r_num = random.randint(0,len(chars)-1)
+        random_string += chars[r_num]
+    while random_string in padIDs:
+        random_string = ''
+        for i in range(string_length):
+            r_num = random.randint(0,len(chars)-1)
+            random_string += chars[r_num]
+    return random_string
+
+#判断笔记是否存在-pad_name
+def pad_is_exist_name(pad_name):
+    pad_objects = Pad_card.objects.all()
+    pad_names = []
+    for pad_object in pad_objects:
+        pad_names.append(pad_object.pad_name)
+    if pad_name in pad_names:
+        return True
+    else:
+        return False
+
+#判断笔记是否存在-padID
+def pad_is_exist_ID(padID):
+    with open('/var/www/etherpad-lite/APIKEY.txt','r') as file_temp:
+        apikey = file_temp.read()
+    padIDs = urllib2.urlopen('http://filmind.cn:9001/api/1.2.1/listAllPads?apikey='+apikey).read()
+    # padIDs = urllib2.urlopen('http://192.168.3.133:9001/api/1.2.1/listAllPads?apikey='+apikey).read()
+    if padID in padIDs:
+        return True
+    else:
+        return False
+
+#创建笔记
+@login_required
+def create_pad(request,*args,**kwargs):
+    url = kwargs['project_id']
+    user_now = request.session.get('USERNAME', False)
+    user_head_portrait = User.objects.get(username=user_now).head_portrait
+    project_object = Project.objects.get(id=url)
+    project_type = project_object.project_type
+    milestones = project_type.milestone.all()
+    prioritys = project_type.task_priority.all()
+    statuss = project_type.task_status.all()
+    components = project_type.task_component.all()
+    types = project_type.task_type.all()
+    versions = project_type.task_version.all()
+    if request.method == 'POST':
+        #获取APIKEY
+        with open('/var/www/etherpad-lite/APIKEY.txt','r') as file_temp:
+            apikey = file_temp.read()
+        #判断笔记是否存在
+        name = request.POST.get('pad_name')
+        type_id = request.POST.get('type')
+        if pad_is_exist_name(name):
+            error_message = '记事本已存在，请重新输入。'
+            return render_to_response('create_pad.html', locals())
+        else:
+            #抓取笔记卡片信息
+            padID = create_padID()
+            pad_name = name
+            pad_creator = user_now
+            pad_create_time = datetime.now()
+            pad_change_time = datetime.now()
+            pad_authors = user_now
+            pad_project = url
+            pad_type = Type.objects.get(id=type_id)
+            #保存笔记卡片信息
+            pad_card_message = Pad_card(pad_creator=pad_creator,pad_name=pad_name,padID=padID,pad_create_time=pad_create_time,pad_change_time=pad_change_time,pad_authors=pad_authors,pad_project=pad_project,pad_type=pad_type)
+            pad_card_message.save()
+            #创建笔记
+            create_pad_url = urllib2.urlopen('http://filmind.cn:9001/api/1.2.1/createPad?apikey='+apikey+'&padID='+padID).read()
+            # create_pad_url = urllib2.urlopen('http://192.168.3.133:9001/api/1.2.1/createPad?apikey='+apikey+'&padID='+padID).read()
+            return HttpResponseRedirect('/padlist/'+url+'/show/')
+    return render_to_response('create_pad.html',locals())
+
+
+
